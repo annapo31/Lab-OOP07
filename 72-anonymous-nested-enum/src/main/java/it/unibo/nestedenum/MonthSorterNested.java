@@ -1,5 +1,6 @@
 package it.unibo.nestedenum;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -10,16 +11,14 @@ import java.util.Objects;
  */
 public final class MonthSorterNested implements MonthSorter {
 
-    static final Locale LOCALE = Locale.ITALY;
-
     @Override
     public Comparator<String> sortByDays() {
-        return null;
+        return new Month.SortByDate();
     }
 
     @Override
     public Comparator<String> sortByOrder() {
-        return null;
+        return new Month.SortByMonthOrder();
     }
 
     public enum Month {
@@ -46,23 +45,24 @@ public final class MonthSorterNested implements MonthSorter {
             return this.days ;
         }
 
-        public Month fromString (final String name){
+        public static Month fromString (final String name){
             Objects.requireNonNull(name, "The string 'name' iterable cannot be null");
-            // Si convertono in maiuscolo i caratteri minuscoli della string
-            name.toUpperCase();
+            // Convert the string to uppercase to match enum names
+            String newName = name.toUpperCase(Locale.ITALY);
 
             try{
-                return Month.valueOf(name);
+                return Month.valueOf(newName);
             } catch (IllegalArgumentException e) {
-                // Nessun mese corrisponde esattamente al nome
+                // No direct match with any month, try partial match
 
-                // Creo una lista vuota per contenere i mesi che matchano parzialmente
-                // Se nessun mese matcha, la lista rimane vuota e lanciamo errore
-                // Se ne matchano più di uno, lanciamo errore
-                List<String> matchingMonths =  List.of();
+                // Create an empty list to contain the partially matche months
+                // If only one month matches, return it
+                // else if more than one month matches or
+                // there's no match, throw an IllegalArgumentException
+                List<Month> matchingMonths =  new ArrayList<>();
                 for (Month m : Month.values()) {
-                    if (m.name().startsWith(name)) {
-                        matchingMonths.add(m.name());
+                    if (m.name().startsWith(newName)) {
+                        matchingMonths.add(m);
                     }
                 }
 
@@ -74,17 +74,31 @@ public final class MonthSorterNested implements MonthSorter {
                         "] doesn't matches any of the month");
                 }
 
-                return Month.valueOf(matchingMonths.get(0));
+                return matchingMonths.get(0);
             }
         }
 
-        /* TODOOOOOOO
-        public static SortByMonthOrder implements Comparator<String> {
+        
+        private static class SortByMonthOrder implements Comparator<String> {
+
+            @Override
+            public int compare(String s1, String s2) {
+                final Month m1 = Month.fromString(s1);
+                final Month m2 = Month.fromString(s2);
+                return m1.compareTo(m2);
+            }
             
         }
 
-        public static SortByDate implements Comparator<String>{
+        private static class SortByDate implements Comparator<String>{
 
-        }*/
+            @Override
+            public int compare(String s1, String s2) {
+                final Month m1 = Month.fromString(s1);
+                final Month m2 = Month.fromString(s2);
+                return Integer.compare(m1.getNumOfDays(), m2.getNumOfDays());    
+            }
+
+        }
     }
 }
