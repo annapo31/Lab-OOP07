@@ -20,8 +20,10 @@ public class IterableWithPolicyImpl<T> implements IterableWithPolicy<T>{
     public IterableWithPolicyImpl (final T[] elements){
         // Si fa con classe anonima che ritorna sempre un true
         this(elements, new Predicate<T>() {
+            @Override
                 public boolean test(T elem) { return true; }
-            });
+            }
+        );
     }
 
     /** 
@@ -47,13 +49,11 @@ public class IterableWithPolicyImpl<T> implements IterableWithPolicy<T>{
 
     public Iterator<T> iterator() {
         return new IteratorImpl();
-
     }
 
     class IteratorImpl implements Iterator<T> {
 
         private int position = 0;
-        // Bisogna fare un ciclo
 
         /* previous implementation
         @Override
